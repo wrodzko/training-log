@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Dziennik treningowy</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f6e73'/%3E%3Cpath d='M7 20l5-6 4 4 5-8 4 5' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="avatar" aria-hidden="true">TL</div>
+    <h1>Dziennik treningowy</h1>
+    <p id="gate-msg">Ładowanie…</p>
+    <button class="btn" type="button" id="signin" hidden>Zaloguj się przez Google</button>
+    <button class="btn ghost" type="button" id="gate-signout" hidden>Wyloguj</button>
+  </div>
+</div>
+<div id="app" hidden>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="athlete">
+      <div class="avatar" id="athlete-initials">·</div>
+      <div>
+        <h1 id="athlete-name">Dziennik treningowy</h1>
+        <div class="sub"><span id="sync" class="dot-off">Łączenie z bazą danych…</span><span id="role"></span><span><button class="linkbtn" type="button" id="signout">Wyloguj</button></span></div>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Sekcje">
+      <a href="#podsumowanie">Podsumowanie</a>
+      <a href="#trening">Trening</a>
+      <a href="#jedzenie">Jedzenie</a>
+      <a href="#aktywnosc">Aktywność</a>
+      <a href="#regeneracja">Regeneracja</a>
+      <a href="#komentarze">Komentarze</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="banners" style="display:grid;gap:10px"></div>
+
+  <section id="podsumowanie">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow" id="today-label"></div>
+        <h2>Podsumowanie</h2>
+      </div>
+      <div class="seg" role="group" aria-label="Okres wykresów">
+        <button type="button" data-range="14" aria-pressed="false">14 dni</button>
+        <button type="button" data-range="30" aria-pressed="true">30 dni</button>
+        <button type="button" data-range="90" aria-pressed="false">90 dni</button>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>Masa ciała</h3><span class="meta">Garmin Connect · waga Index</span></div>
+        <div class="legend"><span><i class="line" style="background:var(--s-run)"></i>Waga, kg</span><span><i class="dash"></i><span id="lg-weight">Cel</span></span></div>
+        <div class="chart" id="chart-weight"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Tkanka tłuszczowa</h3><span class="meta">Garmin Connect · waga Index</span></div>
+        <div class="legend"><span><i class="line" style="background:var(--s-gym)"></i>Tłuszcz, %</span><span><i class="dash"></i><span id="lg-fat">Cel</span></span></div>
+        <div class="chart" id="chart-fat"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trening">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Plan układa trener · wykonanie wpisuje zawodnik</div>
+        <h2>Plan treningowy</h2>
+        <p>Kliknij trening, żeby zobaczyć ćwiczenia, serie i ciężary. Po treningu wpisz, ile faktycznie zrobiłeś, i zaznacz serię.</p>
+      </div>
+      <div class="nav-group">
+        <button class="iconbtn" type="button" id="wk-prev" aria-label="Poprzedni tydzień">‹</button>
+        <span class="nav-label num" id="wk-label"></span>
+        <button class="iconbtn" type="button" id="wk-next" aria-label="Następny tydzień">›</button>
+        <button class="btn ghost sm" type="button" id="wk-today">Ten tydzień</button>
+      </div>
+    </div>
+    <div class="week" id="week"></div>
+    <div class="card" id="wk-detail"></div>
+    <div class="card">
+      <div class="card-head">
+        <h3>Postęp w ćwiczeniach</h3>
+        <label class="field" style="grid-auto-flow:column;align-items:center;gap:8px">Ćwiczenie <select id="ex-select"></select></label>
+      </div>
+      <div class="legend"><span><i class="line" style="background:var(--s-gym)"></i>Najcięższa wykonana seria, kg</span></div>
+      <div class="chart" id="chart-ex"></div>
+      <div class="table-wrap"><table><thead><tr><th>Data</th><th>Najlepsza seria</th><th class="r">Serie</th><th class="r">Objętość</th></tr></thead><tbody id="ex-table"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="jedzenie">
+    <div class="section-head">
+      <div>
+        <h2>Jedzenie</h2>
+        <p>Co i ile zjedzone, z podziałem na posiłki. Trener zostawia komentarz do każdego dnia.</p>
+      </div>
+      <div class="nav-group">
+        <button class="iconbtn" type="button" id="fd-prev" aria-label="Poprzedni dzień">‹</button>
+        <span class="nav-label" id="fd-label"></span>
+        <button class="iconbtn" type="button" id="fd-next" aria-label="Następny dzień">›</button>
+        <button class="btn ghost sm" type="button" id="fd-today">Dziś</button>
+      </div>
+    </div>
+    <div class="food-grid">
+      <div class="card">
+        <div class="card-head"><h3>Posiłki</h3><span class="meta" id="fd-total"></span></div>
+        <div id="meals"></div>
+        <form class="add-food" id="add-food" autocomplete="off">
+          <div class="eyebrow">Dodaj produkt</div>
+          <div class="form-row">
+            <label class="field">Posiłek <select id="af-meal"></select></label>
+            <label class="field">Godzina <input id="af-time" type="time"></label>
+            <label class="field">Produkt <input id="af-name" class="prod" list="products" placeholder="np. Płatki owsiane" required></label>
+            <label class="field">Ilość, g <input id="af-g" type="number" min="0" step="1" required></label>
+          </div>
+          <div class="form-row">
+            <label class="field">kcal <input id="af-kcal" type="number" min="0" step="1"></label>
+            <label class="field">Białko, g <input id="af-p" type="number" min="0" step="0.1"></label>
+            <label class="field">Tłuszcz, g <input id="af-f" type="number" min="0" step="0.1"></label>
+            <label class="field">Węgle, g <input id="af-c" type="number" min="0" step="0.1"></label>
+            <button class="btn" type="submit">Dodaj</button>
+          </div>
+          <div class="muted" style="font-size:.8rem" id="af-hint">Produkty z listy liczą się same. Nowy produkt wpisz z wartościami, a strona go zapamięta.</div>
+          <datalist id="products"></datalist>
+        </form>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <div class="card">
+          <div class="card-head"><h3>Dzień a cele</h3><button class="btn ghost sm" type="button" id="tg-edit">Zmień cele</button></div>
+          <div class="goals" id="day-goals"></div>
+          <form id="tg-form" hidden class="goals">
+            <div class="form-row">
+              <label class="field">kcal <input id="tg-kcal" type="number" min="0"></label>
+              <label class="field">Białko, g <input id="tg-p" type="number" min="0"></label>
+              <label class="field">Tłuszcz, g <input id="tg-f" type="number" min="0"></label>
+              <label class="field">Węgle, g <input id="tg-c" type="number" min="0"></label>
+              <label class="field">Woda, l <input id="tg-w" type="number" min="0" step="0.1"></label>
+            </div>
+            <div class="form-row">
+              <label class="field">Cel wagi, kg <input id="tg-wg" type="number" min="0" step="0.1"></label>
+              <label class="field">Cel tłuszczu, % <input id="tg-fg" type="number" min="0" step="0.1"></label>
+              <label class="field">Termin <input id="tg-date" type="date"></label>
+            </div>
+            <div class="form-row"><button class="btn" type="submit">Zapisz cele</button><button class="btn ghost" type="button" id="tg-cancel">Anuluj</button></div>
+          </form>
+          <label class="field">Woda, l <input id="fd-water" type="number" min="0" step="0.1"></label>
+        </div>
+        <div class="card">
+          <label class="field">Notatka zawodnika <textarea id="fd-note" placeholder="Jak się czułeś, głód, wyjątki od planu…"></textarea></label>
+          <label class="field">Komentarz trenera <textarea id="fd-coach" placeholder="Uwagi trenera do tego dnia"></textarea></label>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Bilans kalorii</h3><span class="meta">zjedzone minus spalone wg Garmin, ostatnie 14 dni</span></div>
+      <div class="legend"><span><i style="background:var(--div-neg)"></i>Deficyt</span><span><i style="background:var(--div-pos)"></i>Nadwyżka</span></div>
+      <div class="chart" id="chart-balance"></div>
+    </div>
+  </section>
+
+  <section id="aktywnosc">
+    <div class="section-head"><div><h2>Aktywność</h2><p>Dane z zegarka Garmin: objętość treningowa, kroki i ostatnie aktywności.</p></div></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>Czas treningu w tygodniu</h3><span class="meta">minuty, 12 tygodni</span></div>
+        <div class="legend"><span><i style="background:var(--s-run)"></i>Bieg</span><span><i style="background:var(--s-bike)"></i>Rower</span><span><i style="background:var(--s-gym)"></i>Siłownia</span></div>
+        <div class="chart" id="chart-volume"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Kroki dziennie</h3><span class="meta">cel 10 000</span></div>
+        <div class="legend"><span><i style="background:var(--s-run)"></i>Kroki</span><span><i class="dash"></i>Cel 10 000</span></div>
+        <div class="chart" id="chart-steps"></div>
+      </div>
+      <div class="card span-wide">
+        <div class="card-head"><h3>Ostatnie aktywności</h3><span class="meta">TE: Training Effect (tlenowy), skala 0–5</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Aktywność</th><th class="r">Dystans</th><th class="r">Czas</th><th class="r">Tempo / prędkość</th><th class="r">Śr. tętno</th><th class="r">Maks. tętno</th><th class="r">TE</th><th class="r">kcal</th></tr></thead>
+            <tbody id="activities"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="regeneracja">
+    <div class="section-head"><div><h2>Regeneracja</h2><p>Sen, zmienność rytmu serca (HRV) i tętno spoczynkowe. Na tej podstawie trener zmniejsza albo utrzymuje obciążenie.</p></div></div>
+    <div class="grid-3">
+      <div class="card span-wide">
+        <div class="card-head"><h3>Fazy snu</h3><span class="meta">ostatnie 14 nocy, godziny</span></div>
+        <div class="legend"><span><i style="background:var(--sleep-deep)"></i>Głęboki</span><span><i style="background:var(--sleep-rem)"></i>REM</span><span><i style="background:var(--sleep-light)"></i>Płytki</span></div>
+        <div class="chart" id="chart-sleep"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>HRV w nocy</h3><span class="meta">ms</span></div>
+        <div class="legend"><span><i class="line" style="background:var(--s-run)"></i>HRV</span><span id="lg-hrv-wrap" hidden><i style="background:var(--accent-soft);border:1px solid var(--border)"></i><span id="lg-hrv"></span></span></div>
+        <div class="chart" id="chart-hrv"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Tętno spoczynkowe</h3><span class="meta">ud./min</span></div>
+        <div class="chart" id="chart-rhr"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Body Battery rano</h3><span class="meta">0–100</span></div>
+        <div class="chart" id="chart-bb"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="komentarze">
+    <div class="section-head"><div><h2>Komentarze</h2><p>Rozmowa zawodnika z trenerem: pytania, zmiany w planie, samopoczucie.</p></div></div>
+    <div class="card">
+      <div class="notes" id="notes"></div>
+      <form class="compose" id="compose">
+        <textarea id="compose-input" placeholder="Napisz komentarz…" aria-label="Komentarz" style="min-height:44px"></textarea>
+        <button class="btn" type="submit">Wyślij</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="zrodla">
+    <div class="section-head"><div><h2>Skąd są dane</h2></div></div>
+    <div class="sources">
+      <div class="src"><b>Garmin</b>Waga, sen, HRV, tętno, Body Battery, kroki i aktywności. Synchronizowane z Garmin Connect raz dziennie.</div>
+      <div class="src"><b>Plan treningowy</b>Trener dodaje treningi, ćwiczenia, serie i ciężary. Zawodnik wpisuje wykonanie.</div>
+      <div class="src"><b>Jedzenie</b>Zawodnik wpisuje posiłki tutaj. Kalorie liczą się z bazy produktów.</div>
+      <div class="src"><b>Komentarze i cele</b>Wspólne dla trenera i zawodnika, zapisują się od razu.</div>
+    </div>
+  </section>
+</main>
+
+<div class="tooltip" id="tip" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+</body>
+</html>

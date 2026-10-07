@@ -1,0 +1,22 @@
+# Secrets and local Garmin data: never commit
+*service-account*.json
+*-firebase-adminsdk-*.json
+garmin_tokens*.json
+.garmin*/
+sync/raw/
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
