@@ -1,0 +1,59 @@
+rules_version = '2';
+
+// Access list lives in the document config/access:
+//   { athlete: "you@gmail.com", coaches: ["coach@gmail.com"], athleteName: "Your Name" }
+// Create and edit it in the Firebase console; clients can never write it.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function access() {
+      return get(/databases/$(database)/documents/config/access).data;
+    }
+    function email() {
+      return request.auth.token.email.lower();
+    }
+    function isMember() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/config/access)
+        && (email() == access().athlete.lower() || email() in access().coaches);
+    }
+
+    // Access list: readable by members, edited only in the console.
+    match /config/{docId} {
+      allow read: if isMember();
+      allow write: if false;
+    }
+
+    // Garmin data is written only by the sync job (Admin SDK bypasses these rules).
+    match /garmin/{docId} {
+      allow read: if isMember();
+      allow write: if false;
+    }
+
+    // Shared training plan, food log and targets.
+    match /workouts/{docId} {
+      allow read, write: if isMember();
+    }
+    match /food/{docId} {
+      allow read, write: if isMember();
+    }
+    match /settings/{docId} {
+      allow read, write: if isMember();
+    }
+
+    // Comments: anyone on the list can post as themselves; nobody edits history.
+    match /comments/{docId} {
+      allow read: if isMember();
+      allow create: if isMember()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 4000;
+      allow update, delete: if false;
+    }
+
+    // Everything else (including the sync job's private/garmin token store) is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
